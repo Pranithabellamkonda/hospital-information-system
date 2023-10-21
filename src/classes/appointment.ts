@@ -2,6 +2,6 @@ export class Appointment {
     AppointmentId: string;
     PatientId: string;
     DoctorId: string;
-    AppoitmentDate: string;
+    AppointmentDate: string;
     Notes: string;
 }

@@ -22,12 +22,12 @@ CREATE TABLE Doctor(
 );
 
 CREATE TABLE Appointment(
-AppoitmentId varchar(25) NOT NULL,
+AppointmentId varchar(25) NOT NULL,
 PatientId varchar(25) NOT NULL,
 DoctorId varchar(25) NOT NULL,
-AppoitmentDate date NOT NULL,
+AppointmentDate date NOT NULL,
 Notes varchar(50) DEFAULT NULL,
-PRIMARY KEY (AppoitmentID),
+PRIMARY KEY (AppointmentID),
 FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
 FOREIGN KEY (DoctorID) REFERENCES Doctor(DoctorID)
 );
@@ -68,7 +68,7 @@ VALUES
 ('D003', 'Dr. Lisa', 'Anderson', 'Dermatologist', '+1987654321', 'lisa.a@example.com'),
 ('D004', 'Dr. James', 'Wilson', 'Neurologist', '+1654321098', 'james.w@example.com');
 
-INSERT INTO Appointment (AppoitmentId, PatientId, DoctorId, AppoitmentDate, Notes)
+INSERT INTO Appointment (AppointmentId, PatientId, DoctorId, AppointmentDate, Notes)
 VALUES 
 ('A001', 'P001', 'D001', '2023-10-18', 'Regular checkup'),
 ('A002', 'P002', 'D002', '2023-10-20', 'Pain in the knee'),
