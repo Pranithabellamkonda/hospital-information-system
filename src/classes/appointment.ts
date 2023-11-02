@@ -2,6 +2,10 @@ export class Appointment {
     AppointmentId: string;
     PatientId: string;
     DoctorId: string;
-    AppointmentDate: string;
+    DoctorFName?: string;
+    DoctorLName?: string;
+    AppointmentSlotId: string;
+    AppointmentStartTime?: string;
+    AppointmentEndTime?: string;
     Notes: string;
 }

@@ -1,99 +1,151 @@
 USE HIS;
 
-CREATE TABLE Patient(
-	PatientId varchar(25) NOT NULL,
-    PatientFName varchar(25) NOT NULL,
-    PatientLName varchar(25) NOT NULL,
-    DateOfBirth date NOT NULL,
-    Gender varchar(10),
-    Phone varchar(25) NOT NULL,
-    Email varchar(50),
-    PRIMARY KEY (PatientID)
+SHOW TABLES;
+
+CREATE TABLE Patient (
+    PatientId INT AUTO_INCREMENT PRIMARY KEY,
+    PatientFName VARCHAR(25) NOT NULL,
+    PatientLName VARCHAR(25) NOT NULL,
+    DateOfBirth DATE NOT NULL,
+    Gender VARCHAR(10),
+    Phone VARCHAR(25) NOT NULL,
+    Email VARCHAR(50)
 );
 
-CREATE TABLE Doctor(
-	DoctorId varchar(25) NOT NULL,
-    DoctorFName varchar(25) NOT NULL,
-    DoctorLName varchar(25) NOT NULL,
-    Specialization varchar(50) NOT NULL,
-    Phone varchar(25) NOT NULL,
-    Email varchar(50),
-    PRIMARY KEY (DoctorID)
+CREATE TABLE Specialization (
+    SpecializationId INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(25) NOT NULL,
+    Description VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE Appointment(
-AppointmentId varchar(25) NOT NULL,
-PatientId varchar(25) NOT NULL,
-DoctorId varchar(25) NOT NULL,
-AppointmentDate date NOT NULL,
-Notes varchar(50) DEFAULT NULL,
-PRIMARY KEY (AppointmentID),
-FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
-FOREIGN KEY (DoctorID) REFERENCES Doctor(DoctorID)
+
+CREATE TABLE Doctor (
+    DoctorId INT AUTO_INCREMENT PRIMARY KEY,
+    DoctorFName VARCHAR(25) NOT NULL,
+    DoctorLName VARCHAR(25) NOT NULL,
+    SpecializationId INT NOT NULL,
+    Phone VARCHAR(25) NOT NULL,
+    Email VARCHAR(50),
+    FOREIGN KEY (SpecializationId)
+        REFERENCES Specialization (SpecializationId)
 );
 
-CREATE TABLE MedicalRecord(
-	RecordId varchar(25) NOT NULL,
-    PatientId varchar(25) NOT NULL,
-    DoctorId varchar(25) NOT NULL,
-    Date date NOT NULL,
-    Diagnosis varchar(50) NOT NULL,
-    Prescription varchar(50) NOT NULL,
-    PRIMARY KEY(RecordId),
-    FOREIGN KEY (PatientId) REFERENCES Patient(PatientId),
-    FOREIGN KEY (DoctorId) REFERENCES Doctor(DoctorId)
+CREATE TABLE AppointmentSlot (
+    AppointmentSlotId INT AUTO_INCREMENT PRIMARY KEY,
+    AppointmentStartTime DATETIME NOT NULL,
+    AppointmentEndTime DATETIME NOT NULL
+);
+       
+            
+CREATE TABLE Appointment (
+    AppointmentId INT AUTO_INCREMENT PRIMARY KEY,
+    AppointmentSlotId INT NOT NULL,
+    DoctorId INT NOT NULL,
+    PatientId INT NOT NULL,
+    Notes VARCHAR(500) DEFAULT NULL,
+    FOREIGN KEY (AppointmentSlotId) REFERENCES AppointmentSlot(AppointmentSlotId) ON DELETE CASCADE,
+    FOREIGN KEY (DoctorId) REFERENCES Doctor(DoctorId) ON DELETE CASCADE,
+    FOREIGN KEY (PatientId) REFERENCES Patient(PatientId) ON DELETE CASCADE,
+    CONSTRAINT UniqueDoctorSlot UNIQUE (DoctorId, AppointmentSlotId),
+    CONSTRAINT UniquePatientSlot UNIQUE (PatientId, AppointmentSlotId)
 );
 
 CREATE TABLE Billing(
-	BillingId varchar(25) NOT NULL,
-    PatientId varchar(25) NOT NULL,
+	BillingId INT AUTO_INCREMENT PRIMARY KEY,
+    AdminId INT NOT NULL,
+    PatientId INT NOT NULL,
     BillingAmount decimal(10,2) NOT NULL,
     BillingDate date NOT NULL,
-    PRIMARY KEY(BillingId),
-    FOREIGN KEY (PatientId) REFERENCES Patient(PatientId)
+    FOREIGN KEY (PatientId) REFERENCES Patient(PatientId),
+    FOREIGN KEY (AdminId) REFERENCES Admin(AdminId)
 );
 
 
-INSERT INTO Patient (PatientId, PatientFName, PatientLName, DateOfBirth, Gender, Phone, Email)
-VALUES 
-('P001', 'John', 'Doe', '1990-05-15', 'Male', '+1234567890', 'john.doe@example.com'),
-('P002', 'Alice', 'Johnson', '1985-09-20', 'Female', '+1987654321', 'alice.j@example.com'),
-('P003', 'Michael', 'Smith', '1978-03-10', 'Male', '+1765432109', 'michael.smith@example.com'),
-('P004', 'Emily', 'Brown', '1995-12-28', 'Female', '+1456789023', 'emily.b@example.com');
+CREATE TABLE ADMIN(
+	AdminId INT AUTO_INCREMENT PRIMARY KEY,
+    AdminFName VARCHAR(25) NOT NULL,
+    AdminLName VARCHAR(25) NOT NULL,
+    Phone VARCHAR(25) NOT NULL,
+    Email VARCHAR(50) NOT NULL
+);
 
-INSERT INTO Doctor (DoctorId, DoctorFName, DoctorLName, Specialization, Phone, Email)
-VALUES 
-('D001', 'Dr. Sarah', 'Johnson', 'Cardiologist', '+1122334455', 'sarah.j@example.com'),
-('D002', 'Dr. David', 'Miller', 'Orthopedic Surgeon', '+1567890123', 'david.m@example.com'),
-('D003', 'Dr. Lisa', 'Anderson', 'Dermatologist', '+1987654321', 'lisa.a@example.com'),
-('D004', 'Dr. James', 'Wilson', 'Neurologist', '+1654321098', 'james.w@example.com');
+CREATE TABLE MedicalRecord (
+    RecordId INT AUTO_INCREMENT PRIMARY KEY,
+    PatientId INT NOT NULL,
+    DoctorId INT NOT NULL,
+    Date DATE NOT NULL,
+    Diagnosis VARCHAR(50) NOT NULL,
+    Prescription VARCHAR(50) NOT NULL,
+    FOREIGN KEY (PatientId)
+        REFERENCES Patient (PatientId),
+    FOREIGN KEY (DoctorId)
+        REFERENCES Doctor (DoctorId)
+);
 
-INSERT INTO Appointment (AppointmentId, PatientId, DoctorId, AppointmentDate, Notes)
-VALUES 
-('A001', 'P001', 'D001', '2023-10-18', 'Regular checkup'),
-('A002', 'P002', 'D002', '2023-10-20', 'Pain in the knee'),
-('A003', 'P003', 'D003', '2023-10-22', 'Skin rash issue'),
-('A004', 'P004', 'D004', '2023-10-25', 'Headaches and dizziness');
+/* Do not run the following every time. 
+It is only supposed to be run once to pre-populate data for 1 month. */
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PopulateAppointmentSlotsForMonth`()
+BEGIN
+    DECLARE today_date DATE;
+    DECLARE end_date DATE;
+    DECLARE current_datetime DATETIME;
+    
+    SET today_date = CURDATE();
+    SET end_date = DATE_ADD(CURDATE(), INTERVAL 1 MONTH);
+    
+    WHILE today_date <= end_date DO
+        SET current_datetime = TIMESTAMP(today_date, '09:00:00');
+        
+        WHILE HOUR(current_datetime) < 17 DO
+            IF HOUR(current_datetime) <> 12 THEN
+                INSERT INTO AppointmentSlot (AppointmentStartTime, AppointmentEndTime)
+                VALUES (current_datetime, DATE_ADD(current_datetime, INTERVAL 1 HOUR));
+            END IF;
+            
+            SET current_datetime = DATE_ADD(current_datetime, INTERVAL 1 HOUR);
+        END WHILE;
+        
+        SET today_date = DATE_ADD(today_date, INTERVAL 1 DAY);
+    END WHILE;
+END$$
+DELIMITER ;
 
-INSERT INTO MedicalRecord (RecordId, PatientId, DoctorId, Date, Diagnosis, Prescription)
-VALUES 
-('M001', 'P001', 'D001', '2023-10-18', 'Hypertension', 'Prescribed medication for blood pressure'),
-('M002', 'P002', 'D002', '2023-10-20', 'Knee strain', 'Physical therapy sessions prescribed'),
-('M003', 'P003', 'D003', '2023-10-22', 'Allergic dermatitis', 'Prescribed topical ointment'),
-('M004', 'P004', 'D004', '2023-10-25', 'Migraine', 'Prescribed migraine relief medication');
 
-INSERT INTO Billing (BillingId, PatientId, BillingAmount, BillingDate)
-VALUES 
-('B001', 'P001', 150.00, '2023-10-19'),
-('B002', 'P002', 200.50, '2023-10-21'),
-('B003', 'P003', 75.25, '2023-10-23'),
-('B004', 'P004', 120.75, '2023-10-26');
+/* Run the following procedure every day to add slots for a new day 1 month from now and
+ delete the appointment slots for yesterday. */
+DELIMITER //
+
+CREATE PROCEDURE PopulateAppointmentSlotsForOneDay()
+BEGIN
+    DECLARE target_date DATE;
+    DECLARE current_datetime DATETIME;
+    
+    -- Calculate the target date (one month from today)
+    SET target_date = DATE_ADD(CURDATE(), INTERVAL 1 MONTH);
+    
+    -- Delete outdated records for the target date
+    DELETE FROM AppointmentSlot WHERE DATE(AppointmentStartTime) = target_date;
+    
+    -- Add slots for each hour between 9 AM and 5 PM excluding noon to 1 PM
+    SET current_datetime = TIMESTAMP(target_date, '09:00:00');
+    
+    WHILE HOUR(current_datetime) < 17 DO
+        IF HOUR(current_datetime) <> 12 THEN
+            INSERT INTO AppointmentSlot (AppointmentStartTime, AppointmentEndTime)
+            VALUES (current_datetime, DATE_ADD(current_datetime, INTERVAL 1 HOUR));
+        END IF;
+        
+        SET current_datetime = DATE_ADD(current_datetime, INTERVAL 1 HOUR);
+    END WHILE;
+END //
+
+DELIMITER ;
 
 
 
-
-
-
-
-
-
+CREATE EVENT PopulateAppointmentSlotsEvent
+ON SCHEDULE EVERY 1 DAY
+STARTS TIMESTAMP(CURRENT_DATE, '00:00:00')
+DO
+CALL PopulateAppointmentSlotsForOneDay();

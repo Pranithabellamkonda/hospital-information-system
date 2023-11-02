@@ -18,7 +18,7 @@ appointmentsRouter.get('/appointments', async (_req: Request, res: Response) => 
             AppointmentId: a.AppointmentId,
             PatientId: a.PatientId,
             DoctorId: a.DoctorId,
-            AppointmentDate: a.AppointmentDate,
+            AppointmentSlotId: a.AppointmentSlotId,
             Notes: a.Notes
         };
       });
@@ -29,6 +29,7 @@ appointmentsRouter.get('/appointments', async (_req: Request, res: Response) => 
       logger.error('Error occurred', err.message);
     }
   });
+  
 appointmentsRouter.get('/appointments/:id', async (_req: Request, res: Response) => {
   try {
     const results: Array<Appointment> = await dbConnection.query(`select * from appointment where AppointmentId = '${_req.params.id}'`, { type: QueryTypes.SELECT });
@@ -40,7 +41,7 @@ appointmentsRouter.get('/appointments/:id', async (_req: Request, res: Response)
         AppointmentId: appointment.AppointmentId,
         PatientId: appointment.PatientId,
         DoctorId: appointment.DoctorId,
-        AppointmentDate: appointment.AppointmentDate,
+        AppointmentSlotId: appointment.AppointmentSlotId,
         Notes: appointment.Notes
       }, null, 4));
     } else {
@@ -53,18 +54,18 @@ appointmentsRouter.get('/appointments/:id', async (_req: Request, res: Response)
 });
 
 appointmentsRouter.post('/appointments', async (_req: Request, res: Response) => {
-  try {
-    const appointment: Appointment = _req.body;
+    try {
+      const appointment: Appointment = _req.body;
+  
+      await dbConnection.query(`INSERT INTO Appointment (PatientId, DoctorId, AppointmentSlotId, Notes) VALUES 
+      ('${appointment.PatientId}', '${appointment.DoctorId}', '${appointment.AppointmentSlotId}', '${appointment.Notes}')`,
+      { type: QueryTypes.INSERT });
 
-    await dbConnection.query(`INSERT INTO Appointment (AppointmentId, PatientId, DoctorId, AppointmentDate, Notes) VALUES 
-    ('${appointment.AppointmentId}', '${appointment.PatientId}', '${appointment.DoctorId}', '${appointment.AppointmentDate}', '${appointment.Notes}')`,
-     { type: QueryTypes.INSERT });
-
-    res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
-  } catch (err: any) {
-    res.status(500).send('Error occurred');
-    logger.error('Error occurred', err.message);
-  }
+      res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
+    } catch (err: any) {
+      res.status(500).send('Error occurred');
+      logger.error('Error occurred', err.message);
+    }
 });
 
 export default appointmentsRouter;
