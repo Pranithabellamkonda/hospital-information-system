@@ -1,5 +1,11 @@
-
 USE HIS;
+
+CREATE TABLE User (
+    Username VARCHAR(25) NOT NULL PRIMARY KEY,
+    HashedPassword VARCHAR(300) NOT NULL,
+    Salt VARCHAR(200) NOT NULL,
+    Role ENUM('Doctor', 'Patient', 'Admin')
+);
 
 CREATE TABLE Patient (
     PatientId INT AUTO_INCREMENT PRIMARY KEY,
@@ -25,9 +31,13 @@ CREATE TABLE Doctor (
     SpecializationId INT NOT NULL,
     Phone VARCHAR(25) NOT NULL,
     Email VARCHAR(50),
+    Username VARCHAR(50) NOT NULL,
     FOREIGN KEY (SpecializationId)
-        REFERENCES Specialization (SpecializationId)
+        REFERENCES Specialization (SpecializationId),
+	FOREIGN KEY (Username) 
+		REFERENCES User(Username)
 );
+
 
 CREATE TABLE AppointmentSlot (
     AppointmentSlotId INT AUTO_INCREMENT PRIMARY KEY,
@@ -55,6 +65,17 @@ CREATE TABLE Appointment (
     CONSTRAINT UniquePatientSlot UNIQUE (PatientId , AppointmentSlotId)
 );
 
+CREATE TABLE Admin (
+    AdminId INT AUTO_INCREMENT PRIMARY KEY,
+    AdminFName VARCHAR(25) NOT NULL,
+    AdminLName VARCHAR(25) NOT NULL,
+    Phone VARCHAR(25) NOT NULL,
+    Email VARCHAR(50) NOT NULL,
+    Username VARCHAR(50) NOT NULL,
+    FOREIGN KEY (Username) 
+		REFERENCES User(Username)
+);
+
 CREATE TABLE Billing (
     BillingId INT AUTO_INCREMENT PRIMARY KEY,
     AdminId INT NOT NULL,
@@ -68,13 +89,6 @@ CREATE TABLE Billing (
 );
 
 
-CREATE TABLE Admin (
-    AdminId INT AUTO_INCREMENT PRIMARY KEY,
-    AdminFName VARCHAR(25) NOT NULL,
-    AdminLName VARCHAR(25) NOT NULL,
-    Phone VARCHAR(25) NOT NULL,
-    Email VARCHAR(50) NOT NULL
-);
 
 CREATE TABLE MedicalRecord (
     RecordId INT AUTO_INCREMENT PRIMARY KEY,
@@ -91,8 +105,8 @@ CREATE TABLE MedicalRecord (
 
 /* Do not run the following every time. 
 It is only supposed to be run once to pre-populate data for 1 month. */
-DELIMITER $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `PopulateAppointmentSlotsForMonth`()
+DELIMITER //
+CREATE PROCEDURE `PopulateAppointmentSlotsForMonth`()
 BEGIN
     DECLARE today_date DATE;
     DECLARE end_date DATE;
@@ -115,7 +129,7 @@ BEGIN
         
         SET today_date = DATE_ADD(today_date, INTERVAL 1 DAY);
     END WHILE;
-END$$
+END //
 DELIMITER ;
 
 
@@ -157,6 +171,8 @@ STARTS TIMESTAMP(CURRENT_DATE, '00:00:00')
 DO
 CALL PopulateAppointmentSlotsForOneDay();
 
+CALL PopulateAppointmentSlotsForOneDay();
+
 
 INSERT INTO Specialization (Name, Description)
 VALUES 
@@ -171,18 +187,18 @@ VALUES
     ('Ophthalmology', 'Specializing in eye diseases'),
     ('Urology', 'Specializing in urinary tract and male reproductive system issues');
 
-INSERT INTO Doctor (DoctorFName, DoctorLName, SpecializationId, Phone, Email)
+INSERT INTO Doctor (DoctorFName, DoctorLName, SpecializationId, Phone, Email, Username)
 VALUES 
-    ('John', 'Smith', 11, '123-456-7890', 'john.smith@example.com'),
-    ('Alice', 'Johnson', 12, '987-654-3210', 'alice.j@example.com'),
-    ('Michael', 'Davis', 13, '555-123-4567', 'michael.d@example.com'),
-    ('Emily', 'Brown', 14, '111-222-3333', 'emily.b@example.com'),
-    ('David', 'Lee', 15, '333-444-5555', 'david.l@example.com'),
-    ('Olivia', 'Johnson', 16, '555-666-7777', 'olivia.j@example.com'),
-    ('Daniel', 'Martinez', 17, '777-888-9999', 'daniel.m@example.com'),
-    ('Sophia', 'Williams',18, '888-999-0000', 'sophia.w@example.com'),
-    ('Liam', 'Anderson', 19, '222-333-4444', 'liam.a@example.com'),
-    ('Ava', 'Garcia', 20, '444-555-6666', 'ava.g@example.com');
+    ('John', 'Smith', 11, '123-456-7890', 'john.smith@example.com', 'johnsmith123'),
+    ('Alice', 'Johnson', 12, '987-654-3210', 'alice.j@example.com', 'alicejohnson456'),
+    ('Michael', 'Davis', 13, '555-123-4567', 'michael.d@example.com', 'michaeldavis789'),
+    ('Emily', 'Brown', 14, '111-222-3333', 'emily.b@example.com', 'emilybrown101'),
+    ('David', 'Lee', 15, '333-444-5555', 'david.l@example.com', 'davidlee2022'),
+    ('Olivia', 'Johnson', 16, '555-666-7777', 'olivia.j@example.com', 'oliviajohnson77'),
+    ('Daniel', 'Martinez', 17, '777-888-9999', 'daniel.m@example.com', 'danielmartinez888'),
+    ('Sophia', 'Williams',18, '888-999-0000', 'sophia.w@example.com', 'sophiawilliams999'),
+    ('Liam', 'Anderson', 19, '222-333-4444', 'liam.a@example.com', 'liamanderson222'),
+    ('Ava', 'Garcia', 20, '444-555-6666', 'ava.g@example.com', 'avagarcia444');
     
 INSERT INTO Admin (AdminFName, AdminLName, Phone, Email)
 VALUES 
@@ -267,7 +283,4 @@ DELIMITER ;
 CALL InsertMedicalRecords();
 
 
-select  M.RecordId, M.DoctorId, M.PatientId, M.Date, M.Diagnosis, M.Prescription
-from Doctor D join MedicalRecord M on D.DoctorId = M.DoctorId
-where D.DoctorId = 15 and M.PatientId = 8;
 

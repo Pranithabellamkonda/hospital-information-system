@@ -13,7 +13,6 @@
         "GET->myBills✅": "api/patients/{id}/billing"
     },
     "doctor": {
-        "POST->createDoctor✅": "api/doctors",
         "GET->home✅": "api/doctors/{id}",
         "GET->myPatients✅": "api/doctors/{id}/patients",
         "GET->selectedPatientProfile✅": "api/patients/{pId}",
@@ -24,6 +23,7 @@
     },
     "admin": {
         "GET -> home": "api/admins/{id}",
+        "POST->createDoctor✅": "api/doctors",
         "GET -> Doctors✅": "api/doctors",
         "GET -> SelectedDoctor✅": "api/doctors/{id}",
         "GET -> DoctorAppointments✅": "api/doctors/{id}/appointments",
