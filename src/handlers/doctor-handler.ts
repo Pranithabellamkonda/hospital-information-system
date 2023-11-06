@@ -144,8 +144,8 @@ doctorsRouter.post('/doctors', async (_req: Request, res: Response) => {
   try {
     const doctor: Doctor = _req.body;
 
-    await dbConnection.query(`INSERT INTO Doctor (DoctorFName, DoctorLName, SpecializationId, Phone, Email) VALUES 
-    ('${doctor.DoctorFName}', '${doctor.DoctorLName}', '${doctor.SpecializationId}', '${doctor.Phone}', '${doctor.Email}')`,
+    await dbConnection.query(`INSERT INTO Doctor (DoctorFName, DoctorLName, SpecializationId, Phone, Email, Username) VALUES 
+    ('${doctor.DoctorFName}', '${doctor.DoctorLName}', '${doctor.SpecializationId}', '${doctor.Phone}', '${doctor.Email}', '${doctor.Username}')`,
      { type: QueryTypes.INSERT });
 
     res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));

@@ -7,4 +7,5 @@ export class Doctor {
     Description: string;
     Phone: string;
     Email: string;
+    Username: string;
 }

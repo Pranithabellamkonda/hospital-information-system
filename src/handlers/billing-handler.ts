@@ -34,8 +34,8 @@ billingRouter.post('/billing', async (_req: Request, res: Response) => {
   try {
       const billing: Billing  = _req.body;
 
-    await dbConnection.query(`INSERT INTO Billing (PatientId, BillingAmount, BillingDate) 
-    VALUES ('${billing.PatientId}','${billing.BillingAmount}','${billing.BillingDate}')`, { type: QueryTypes.INSERT });
+    await dbConnection.query(`INSERT INTO Billing (PatientId, AdminId,BillingAmount, BillingDate) 
+    VALUES ('${billing.PatientId}','${billing.AdminId}','${billing.BillingAmount}','${billing.BillingDate}')`, { type: QueryTypes.INSERT });
 
     res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
   } catch (err: any) {
