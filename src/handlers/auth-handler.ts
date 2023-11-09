@@ -1,13 +1,13 @@
 import crypto from 'crypto';
 import express, { type Request, type Response } from 'express';
+import { IVerifyOptions } from 'passport-local';
 import { QueryTypes, Sequelize } from 'sequelize';
-import { User as UserIn } from '../classes/in/user.js';
-import { User as UserOut } from '../classes/in/user.js';
+import { User as UserIn, User as UserOut } from '../classes/in/user.js';
 import { Role } from '../classes/out/user.js';
+import passport from '../middlewares/authentication-middleware.js';
 import { container } from '../utils/inversify-orchestrator.js';
 import { type Logger } from '../utils/logger.js';
 import { TYPES } from '../utils/types.js';
-import passport from '../middlewares/authentication-middleware.js';
 
 const authRouter = express.Router();
 const logger = container.get<Logger>(TYPES.Logger);
@@ -33,10 +33,15 @@ authRouter.post('/signup', async (req: Request, res: Response) => {
 
 authRouter.post('/login', async (req: Request, res: Response) => {
     try {
-        passport.authenticate('password', (err: Error, user: UserOut, info: string, status: any) => {
-            logger.info(info, status);
-            
+        passport.authenticate('password', (err: Error, user: UserOut, options?: IVerifyOptions) => {
             if (err) throw err;
+
+            if (options?.message === 'Incorrect username!' || options?.message === 'Incorrect password!') {
+                res.header('Content-type', 'application/json').status(401).send(JSON.stringify({ 
+                    'Status': 'Unauthorized',
+                    'Message': options.message
+                 }, null, 4));
+            }
 
             res.header('Content-type', 'application/json').status(200).send(JSON.stringify({ 
                 'Status': 'Success',

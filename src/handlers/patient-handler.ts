@@ -1,12 +1,12 @@
 import express, { type Request, type Response } from 'express';
+import { QueryTypes, Sequelize } from 'sequelize';
+import { Appointment } from '../classes/appointment.js';
+import { Billing } from '../classes/billing.js';
+import { MedicalRecord } from '../classes/medicalrecord.js';
+import { Patient } from '../classes/patient.js';
 import { container } from '../utils/inversify-orchestrator.js';
 import { type Logger } from '../utils/logger.js';
 import { TYPES } from '../utils/types.js';
-import { QueryTypes, Sequelize } from 'sequelize';
-import { Patient } from '../classes/patient.js';
-import { MedicalRecord } from '../classes/medicalrecord.js';
-import { Appointment } from '../classes/appointment.js';
-import { Billing } from '../classes/billing.js';
 
 const patientsRouter = express.Router();
 const logger = container.get<Logger>(TYPES.Logger);

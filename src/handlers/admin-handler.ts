@@ -1,10 +1,10 @@
 import express, { type Request, type Response } from 'express';
-import { container } from '../utils/inversify-orchestrator.js';
-import { type Logger } from '../utils/logger.js';
-import { TYPES } from '../utils/types.js';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { Admin } from '../classes/admin.js';
 import { Billing } from '../classes/billing.js';
+import { container } from '../utils/inversify-orchestrator.js';
+import { type Logger } from '../utils/logger.js';
+import { TYPES } from '../utils/types.js';
 
 const adminsRouter = express.Router();
 const logger = container.get<Logger>(TYPES.Logger);
@@ -50,7 +50,7 @@ adminsRouter.get('/admins', async (_req: Request, res: Response) => {
     }
   });
 
-  adminsRouter.get('/admins/:id/billing', async (_req: Request, res: Response) => {
+  adminsRouter.get('/admins/:id/billing',  async (_req: Request, res: Response) => {
     try {
       const results: Array<Billing> = await dbConnection.query(`select b.BillingId, b.PatientId, p.PatientFName, p.PatientLName,b.BillingAmount, b.BillingDate from billing b join patient p  on b.PatientId = p.PatientId  where AdminId = '${_req.params.id}'`, { type: QueryTypes.SELECT });
   

@@ -16,6 +16,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@types/passport-http": "^0.3.11",
     "class-transformer": "0.5.1",
     "cookie-parser": "^1.4.6",
     "dotenv": "16.3.1",
@@ -25,6 +26,7 @@
     "inversify": "6.0.1",
     "mysql2": "^3.6.2",
     "passport": "^0.6.0",
+    "passport-http": "^0.3.0",
     "passport-local": "^1.0.0",
     "query-string": "8.1.0",
     "reflect-metadata": "0.1.13",
