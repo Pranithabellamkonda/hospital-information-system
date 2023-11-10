@@ -7,10 +7,17 @@ import { Patient } from '../classes/patient.js';
 import { container } from '../utils/inversify-orchestrator.js';
 import { type Logger } from '../utils/logger.js';
 import { TYPES } from '../utils/types.js';
+import { IAuthorizationRequest } from '../classes/type-definitions.js';
 
-const patientsRouter = express.Router();
-const logger = container.get<Logger>(TYPES.Logger);
 const dbConnection = container.get<Sequelize>(TYPES.DbConnection);
+const logger = container.get<Logger>(TYPES.Logger);
+const patientsRouter = express.Router();
+
+const isUserAuthorized = async (username: string, patientId: string) => {
+  const results: Array<Patient> = await dbConnection.query(`select * from patient where PatientId = '${patientId}'`, { type: QueryTypes.SELECT });
+
+  return results[0].Username === username;
+};
 
 patientsRouter.get('/patients', async (_req: Request, res: Response) => {
   try {
@@ -34,12 +41,18 @@ patientsRouter.get('/patients', async (_req: Request, res: Response) => {
   }
 });
 
-patientsRouter.get('/patients/:id', async (_req: Request, res: Response) => {
+patientsRouter.get('/patients/:id', async (req: Request, res: Response) => {
   try {
-    const results: Array<Patient> = await dbConnection.query(`select * from patient where PatientId = '${_req.params.id}'`, { type: QueryTypes.SELECT });
+    const results: Array<Patient> = await dbConnection.query(`select * from patient where PatientId = '${req.params.id}'`, { type: QueryTypes.SELECT });
 
     if (results.length > 0) {
       const patient = results[0];
+
+      if (patient.Username !== (<IAuthorizationRequest>req).dbUser.Username) {
+        return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+          'Status': 'Forbidden'
+        }, null, 4));
+      }
 
       res.header('Content-type', 'application/json').status(200).send(JSON.stringify({
         PatientId: patient.PatientId,
@@ -50,19 +63,27 @@ patientsRouter.get('/patients/:id', async (_req: Request, res: Response) => {
         Email: patient.Email
       }, null, 4));
     } else {
-      res.header('Content-type', 'application/json').status(404).send();
+      return res.header('Content-type', 'application/json').status(404).send();
     }
   } catch (err: any) {
-    res.status(500).send('Error occurred');
     logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
   }
 });
 
-patientsRouter.get('/patients/:id/medical-records', async (_req: Request, res: Response) => {
+patientsRouter.get('/patients/:id/medical-records', async (req: Request, res: Response) => {
   try {
+
+    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
+    if(!isAuthorized) {
+      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+        'Status': 'Forbidden'
+      }, null, 4));
+    }
+
     const results: Array<MedicalRecord> = await dbConnection.query(`select M.RecordId, M.DoctorId, D.DoctorFName, D.DoctorLName,
     M.PatientId, M.Date, M.Diagnosis, M.Prescription from Patient P join MedicalRecord M on 
-    P.PatientId = M.PatientId join Doctor D on M.DoctorId = D.DoctorId where P.PatientId = '${_req.params.id}'`, 
+    P.PatientId = M.PatientId join Doctor D on M.DoctorId = D.DoctorId where P.PatientId = '${req.params.id}'`, 
     { type: QueryTypes.SELECT });
 
     const medicalrecords = results.map(m => {
@@ -77,18 +98,25 @@ patientsRouter.get('/patients/:id/medical-records', async (_req: Request, res: R
       };
     });
 
-    res.header('Content-type', 'application/json').status(200).send(JSON.stringify(medicalrecords, null, 4));
+   return res.header('Content-type', 'application/json').status(200).send(JSON.stringify(medicalrecords, null, 4));
   } catch (err: any) {
-    res.status(500).send('Error occurred');
     logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
   }
 });
 
-patientsRouter.get('/patients/:id/appointments', async (_req: Request, res: Response) => {
+patientsRouter.get('/patients/:id/appointments', async (req: Request, res: Response) => {
   try {
+    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
+    if(!isAuthorized) {
+      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+        'Status': 'Forbidden'
+      }, null, 4));
+    }
+
     const results: Array<Appointment> = await dbConnection.query(`select A.AppointmentId, A.DoctorId, D.DoctorFName, D.DoctorLName, A.PatientId, A.Notes,
     S.AppointmentSlotId, S.AppointmentStartTime, S.AppointmentEndTime from Appointment A 
-    join AppointmentSlot S on S.AppointmentSlotId = A.AppointmentSlotId join Doctor D on A.DoctorId = D.DoctorId where A.PatientId = '${_req.params.id}'`, 
+    join AppointmentSlot S on S.AppointmentSlotId = A.AppointmentSlotId join Doctor D on A.DoctorId = D.DoctorId where A.PatientId = '${req.params.id}'`, 
     { type: QueryTypes.SELECT });
 
     const appointments = results.map(a => {
@@ -104,16 +132,24 @@ patientsRouter.get('/patients/:id/appointments', async (_req: Request, res: Resp
       };
     });
 
-    res.header('Content-type', 'application/json').status(200).send(JSON.stringify(appointments, null, 4));
+   return res.header('Content-type', 'application/json').status(200).send(JSON.stringify(appointments, null, 4));
   } catch (err: any) {
-    res.status(500).send('Error occurred');
     logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
   }
 });
 
-patientsRouter.get('/patients/:id/billing', async (_req: Request, res: Response) => {
+patientsRouter.get('/patients/:id/billing', async (req: Request, res: Response) => {
   try {
-      const results: Array<Billing> = await dbConnection.query(`select * from billing where PatientId = '${_req.params.id}'`, 
+
+    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
+    if(!isAuthorized) {
+      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+        'Status': 'Forbidden'
+      }, null, 4));
+    }
+
+      const results: Array<Billing> = await dbConnection.query(`select * from billing where PatientId = '${req.params.id}'`, 
       { type: QueryTypes.SELECT });
   
       const billing = results.map(b => {
@@ -126,10 +162,10 @@ patientsRouter.get('/patients/:id/billing', async (_req: Request, res: Response)
         };
       });
   
-      res.header('Content-type', 'application/json').status(200).send(JSON.stringify(billing, null, 4));
+      return res.header('Content-type', 'application/json').status(200).send(JSON.stringify(billing, null, 4));
   } catch (err: any) {
-    res.status(500).send('Error occurred');
     logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
   }
 });
 
@@ -141,6 +177,29 @@ patientsRouter.post('/patients', async (_req: Request, res: Response) => {
     ('${patient.PatientFName}', '${patient.PatientLName}', '${patient.DateOfBirth}','${patient.Gender}', '${patient.Phone}', '${patient.Email}')`,
      { type: QueryTypes.INSERT });
 
+    return res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
+  } catch (err: any) {
+    logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
+  }
+});
+
+patientsRouter.post('/patients/:id/appointments', async (req: Request, res: Response) => {
+  try {
+
+    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
+    if(!isAuthorized) {
+      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+        'Status': 'Forbidden'
+      }, null, 4));
+    }
+
+    const appointment: Appointment = req.body;
+
+    await dbConnection.query(`INSERT INTO Appointment (PatientId, DoctorId, AppointmentSlotId, Notes) VALUES 
+      ('${appointment.PatientId}', '${appointment.DoctorId}', '${appointment.AppointmentSlotId}', '${appointment.Notes}')`,
+      { type: QueryTypes.INSERT });
+
     res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
   } catch (err: any) {
     res.status(500).send('Error occurred');
@@ -148,20 +207,28 @@ patientsRouter.post('/patients', async (_req: Request, res: Response) => {
   }
 });
 
-patientsRouter.put('/patients/:id', async (_req: Request, res: Response) => {
+patientsRouter.put('/patients/:id', async (req: Request, res: Response) => {
   try {
-    const patient: Patient = _req.body;
+
+    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
+    if(!isAuthorized) {
+      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+        'Status': 'Forbidden'
+      }, null, 4));
+    }
+
+    const patient: Patient = req.body;
 
     await dbConnection.query(`UPDATE Patient SET PatientFName = '${patient.PatientFName}', 
     PatientLName = '${patient.PatientLName}', DateOfBirth = '${patient.DateOfBirth}',
     Gender = '${patient.Gender}', Phone = '${patient.Phone}', Email = '${patient.Email}'
-    where PatientId = '${_req.params.id}'`, { type: QueryTypes.UPDATE });
+    where PatientId = '${req.params.id}'`, { type: QueryTypes.UPDATE });
 
       res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
     } catch (err: any) {
       res.status(500).send('Error occurred');
       logger.error('Error occurred', err.message);
     }
-  });
+});
 
 export default patientsRouter;

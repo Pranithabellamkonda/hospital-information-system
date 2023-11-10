@@ -8,10 +8,11 @@ import doctorsRouter from './handlers/doctor-handler.js';
 import medicalrecordsRouter from './handlers/medicalrecord-handler.js';
 import patientsRouter from './handlers/patient-handler.js';
 import specializationsRouter from './handlers/specialization-handler.js';
-import passport, { authenticateBasic } from './middlewares/authentication-middleware.js';
+import passport, { authenticateBasicMiddleware } from './middlewares/authentication-middleware.js';
 import { container } from './utils/inversify-orchestrator.js';
 import { Logger } from './utils/logger.js';
 import { TYPES } from './utils/types.js';
+import { authorizeMiddleware } from './middlewares/authorization-middleware.js';
 
 const app: Express = express();
 const logger = container.get<Logger>(TYPES.Logger);
@@ -20,7 +21,9 @@ app.use(express.json());
 
 app.use(passport.initialize());
 
-app.use(authenticateBasic);
+app.use(authenticateBasicMiddleware);
+
+app.use(authorizeMiddleware);
 
 app.use('/api',
   authRouter, 

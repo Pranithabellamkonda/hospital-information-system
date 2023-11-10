@@ -8,6 +8,7 @@ import { container } from '../utils/inversify-orchestrator.js';
 import { Logger } from '../utils/logger.js';
 import { NextFunction, type Request, type Response } from 'express';
 import { TYPES } from '../utils/types.js';
+import { IAuthorizationRequest } from '../classes/type-definitions.js';
 
 const logger = container.get<Logger>(TYPES.Logger);
 const dbConnection = container.get<Sequelize>(TYPES.DbConnection);
@@ -56,16 +57,25 @@ passport.use('basic', new BasicStrategy(async (username: string, password: strin
     }
 }));
 
-export const authenticateBasic = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateBasicMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const excludedRoutes = ['/api/login', '/api/signup'];
 
     if (excludedRoutes.includes(req.path)) {
         return next();
     }
 
-    const customAuth = passport.authenticate('basic', { session: false });
+    const authenticate = passport.authenticate('basic', { session: false }, (_err: Error, user: User) => {
+       if (user) {
+        (<IAuthorizationRequest>req).dbUser = user;
+        return next();
+       } else {
+        return res.header('Content-type', 'application/json').status(401).send(JSON.stringify({ 
+            'Status': 'Unauthorized'
+         }, null, 4));
+       }
+    });
 
-    return customAuth(req, res, next);
+    return authenticate(req, res, next);
 };
 
 export default passport;

@@ -8,4 +8,5 @@ export class Appointment {
     AppointmentStartTime?: string;
     AppointmentEndTime?: string;
     Notes: string;
+    Username?: string;
 }

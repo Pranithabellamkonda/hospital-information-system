@@ -7,10 +7,17 @@ import { Doctor } from '../classes/doctor.js';
 import { Patient } from '../classes/patient.js';
 import { MedicalRecord } from '../classes/medicalrecord.js';
 import { Appointment } from '../classes/appointment.js';
+import { IAuthorizationRequest } from '../classes/type-definitions.js';
 
 const doctorsRouter = express.Router();
 const logger = container.get<Logger>(TYPES.Logger);
 const dbConnection = container.get<Sequelize>(TYPES.DbConnection);
+
+const isUserAuthorized = async (username: string, doctorId: string) => {
+  const results: Array<Doctor> = await dbConnection.query(`select * from Doctor where DoctorId = '${doctorId}'`, { type: QueryTypes.SELECT });
+
+  return results[0].Username === username;
+};
 
 doctorsRouter.get('/doctors', async (_req: Request, res: Response) => {
   try {
@@ -36,22 +43,28 @@ doctorsRouter.get('/doctors', async (_req: Request, res: Response) => {
       };
     });
 
-    res.header('Content-type', 'application/json').status(200).send(JSON.stringify(doctors, null, 4));
+    return res.header('Content-type', 'application/json').status(200).send(JSON.stringify(doctors, null, 4));
   } catch (err: any) {
-    res.status(500).send('Error occurred');
     logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
   }
 });
 
-doctorsRouter.get('/doctors/:id', async (_req: Request, res: Response) => {
+doctorsRouter.get('/doctors/:id', async (req: Request, res: Response) => {
   try {
     const results: Array<Doctor> = await dbConnection.query(`select * from doctor where DoctorId = 
-    '${_req.params.id}'`, { type: QueryTypes.SELECT });
+    '${req.params.id}'`, { type: QueryTypes.SELECT });
 
     if (results.length > 0) {
       const doctor = results[0];
 
-      res.header('Content-type', 'application/json').status(200).send(JSON.stringify({
+      if (doctor.Username !== (<IAuthorizationRequest>req).dbUser.Username) {
+        return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+          'Status': 'Forbidden'
+        }, null, 4));
+      }
+
+      return res.header('Content-type', 'application/json').status(200).send(JSON.stringify({
         DoctorId: doctor.DoctorId,
         DoctorName: `${doctor.DoctorFName} ${doctor.DoctorLName}`,
         Specialization: doctor.Specialization,
@@ -59,20 +72,28 @@ doctorsRouter.get('/doctors/:id', async (_req: Request, res: Response) => {
         Email: doctor.Email
       }, null, 4));
     } else {
-      res.header('Content-type', 'application/json').status(404).send();
+      return res.header('Content-type', 'application/json').status(404).send();
     }
   } catch (err: any) {
-    res.status(500).send('Error occurred');
     logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
   }
 });
 
-doctorsRouter.get('/doctors/:id/patients', async (_req: Request, res: Response) => {
+doctorsRouter.get('/doctors/:id/patients', async (req: Request, res: Response) => {
   try {
+
+    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
+    if(!isAuthorized) {
+      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+        'Status': 'Forbidden'
+      }, null, 4));
+    }
+
     const results: Array<Patient> = await dbConnection.query(`select distinct P.PatientId, 
     P.PatientFName, P.PatientLName, P.DateOfBirth, P.Gender, P.Phone, P.Email from Doctor D 
     join MedicalRecord M on D.DoctorId = M.DoctorId join Patient P on M.PatientId = P.PatientId 
-    where D.DoctorId = '${_req.params.id}'`, { type: QueryTypes.SELECT });
+    where D.DoctorId = '${req.params.id}'`, { type: QueryTypes.SELECT });
 
     const patients = results.map(p => {
       return {
@@ -84,18 +105,26 @@ doctorsRouter.get('/doctors/:id/patients', async (_req: Request, res: Response) 
         Email: p.Email
       };
     });
-    res.header('Content-type', 'application/json').status(200).send(JSON.stringify(patients, null, 4));
+    return res.header('Content-type', 'application/json').status(200).send(JSON.stringify(patients, null, 4));
   } catch (err: any) {
-    res.status(500).send('Error occurred');
     logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
   }
 });
 
-doctorsRouter.get('/doctors/:id/appointments', async (_req: Request, res: Response) => {
+doctorsRouter.get('/doctors/:id/appointments', async (req: Request, res: Response) => {
   try {
+
+    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
+    if(!isAuthorized) {
+      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+        'Status': 'Forbidden'
+      }, null, 4));
+    }
+
     const results: Array<Appointment> = await dbConnection.query(`select AppointmentId, PatientId, 
     AppointmentSlotId, Notes from Doctor D join Appointment A on A.DoctorId= D.DoctorId 
-     where D.DoctorId = '${_req.params.id}'`, 
+     where D.DoctorId = '${req.params.id}'`, 
     { type: QueryTypes.SELECT });
 
     const appointments = results.map(a => {
@@ -108,18 +137,26 @@ doctorsRouter.get('/doctors/:id/appointments', async (_req: Request, res: Respon
       };
     });
 
-    res.header('Content-type', 'application/json').status(200).send(JSON.stringify(appointments, null, 4));
+    return res.header('Content-type', 'application/json').status(200).send(JSON.stringify(appointments, null, 4));
   } catch (err: any) {
-    res.status(500).send('Error occurred');
     logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
   }
 });
 
-doctorsRouter.get('/doctors/:id/patients/:pId/medical-records', async (_req: Request, res: Response) => {
+doctorsRouter.get('/doctors/:id/patients/:pId/medical-records', async (req: Request, res: Response) => {
   try {
+
+    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
+    if(!isAuthorized) {
+      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+        'Status': 'Forbidden'
+      }, null, 4));
+    }
+
     const results: Array<MedicalRecord> = await dbConnection.query(`select M.RecordId, M.DoctorId, 
     M.PatientId, M.Date, M.Diagnosis, M.Prescription from Doctor D join MedicalRecord M on 
-    D.DoctorId = M.DoctorId where D.DoctorId = '${_req.params.id}' and M.PatientId = '${_req.params.pId}' `, 
+    D.DoctorId = M.DoctorId where D.DoctorId = '${req.params.id}' and M.PatientId = '${req.params.pId}' `, 
     { type: QueryTypes.SELECT });
 
     const medicalrecords = results.map(m => {
@@ -133,10 +170,10 @@ doctorsRouter.get('/doctors/:id/patients/:pId/medical-records', async (_req: Req
       };
     });
 
-    res.header('Content-type', 'application/json').status(200).send(JSON.stringify(medicalrecords, null, 4));
+    return res.header('Content-type', 'application/json').status(200).send(JSON.stringify(medicalrecords, null, 4));
   } catch (err: any) {
-    res.status(500).send('Error occurred');
     logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
   }
 });
 
@@ -148,6 +185,29 @@ doctorsRouter.post('/doctors', async (_req: Request, res: Response) => {
     ('${doctor.DoctorFName}', '${doctor.DoctorLName}', '${doctor.SpecializationId}', '${doctor.Phone}', '${doctor.Email}', '${doctor.Username}')`,
      { type: QueryTypes.INSERT });
 
+    return res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
+  } catch (err: any) {
+    logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
+  }
+});
+
+doctorsRouter.post('/doctors/:id/medical-records', async (req: Request, res: Response) => {
+  try {
+
+    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
+    if(!isAuthorized) {
+      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+        'Status': 'Forbidden'
+      }, null, 4));
+    }
+
+    const medicalrecord: MedicalRecord = req.body;
+
+    await dbConnection.query(`INSERT INTO MedicalRecord (PatientId, DoctorId, Date, Diagnosis,Prescription) VALUES 
+    ('${medicalrecord.PatientId}', '${medicalrecord.DoctorId}', '${medicalrecord.Date}', '${medicalrecord.Diagnosis}','${medicalrecord.Prescription}' )`,
+     { type: QueryTypes.INSERT });
+
     res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
   } catch (err: any) {
     res.status(500).send('Error occurred');
@@ -155,19 +215,27 @@ doctorsRouter.post('/doctors', async (_req: Request, res: Response) => {
   }
 });
 
-doctorsRouter.put('/doctors/:id', async (_req: Request, res: Response) => {
+doctorsRouter.put('/doctors/:id', async (req: Request, res: Response) => {
   try {
-    const doctor: Doctor = _req.body;
+
+    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
+    if(!isAuthorized) {
+      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+        'Status': 'Forbidden'
+      }, null, 4));
+    }
+
+    const doctor: Doctor = req.body;
 
     await dbConnection.query(`UPDATE Doctor SET DoctorFName = '${doctor.DoctorFName}', 
     DoctorLName = '${doctor.DoctorLName}', SpecializationId = '${doctor.SpecializationId}', 
-    Phone = '${doctor.Phone}', Email = '${doctor.Email}' where DoctorId = '${_req.params.id}'`, 
+    Phone = '${doctor.Phone}', Email = '${doctor.Email}' where DoctorId = '${req.params.id}'`, 
     { type: QueryTypes.UPDATE });
 
-      res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
+      return res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
     } catch (err: any) {
-      res.status(500).send('Error occurred');
       logger.error('Error occurred', err.message);
+      return res.status(500).send('Error occurred');
     }
   });
 

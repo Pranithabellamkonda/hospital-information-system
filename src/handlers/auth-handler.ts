@@ -24,10 +24,10 @@ authRouter.post('/signup', async (req: Request, res: Response) => {
         ('${user.Username}','${hashedPassword.toString('base64')}','${salt.toString('base64')}', '${Role.Patient}')`,
         { type: QueryTypes.INSERT });
 
-        res.header('Content-type', 'application/json').status(200).send(JSON.stringify({ 'Status': 'Success' }, null, 4));
+        return res.header('Content-type', 'application/json').status(200).send(JSON.stringify({ 'Status': 'Success' }, null, 4));
     } catch (err: any) {
-        res.status(500).send('Error occurred');
         logger.error('Error occurred', err.message);
+        return res.status(500).send('Error occurred');
     }
 });
 
@@ -37,20 +37,20 @@ authRouter.post('/login', async (req: Request, res: Response) => {
             if (err) throw err;
 
             if (options?.message === 'Incorrect username!' || options?.message === 'Incorrect password!') {
-                res.header('Content-type', 'application/json').status(401).send(JSON.stringify({ 
+                return res.header('Content-type', 'application/json').status(401).send(JSON.stringify({ 
                     'Status': 'Unauthorized',
                     'Message': options.message
                  }, null, 4));
             }
 
-            res.header('Content-type', 'application/json').status(200).send(JSON.stringify({ 
+            return res.header('Content-type', 'application/json').status(200).send(JSON.stringify({ 
                 'Status': 'Success',
                 'Message': `Log in successful for ${user.Username}`
              }, null, 4));
         })(req, res);
     } catch (err: any) {
-        res.status(500).send('Error occurred');
         logger.error('Error occurred', err.message);
+        return res.status(500).send('Error occurred');
     }
 });
 

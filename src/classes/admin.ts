@@ -4,4 +4,5 @@ export class Admin {
     AdminLName: string;
     Phone: string;
     Email: string;
+    Username?: string;
 }
