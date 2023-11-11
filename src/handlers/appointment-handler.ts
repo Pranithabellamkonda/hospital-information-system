@@ -108,4 +108,27 @@ appointmentsRouter.patch('/appointments/:id', async (req: Request, res: Response
   }
 });
 
+appointmentsRouter.delete('/appointments/:id', async (req: Request, res: Response) => {
+  try {
+    const user = (<IAuthorizationRequest>req).dbUser;
+
+    if (user.Role === Role.Patient) {
+      const results : Array<Patient> = await dbConnection.query(`SELECT P.Username FROM Appointment A JOIN Patient P ON 
+      A.PatientId = P.PatientId WHERE AppointmentId = ${req.params.id}`, { type: QueryTypes.SELECT });
+      if(results[0].Username !== user.Username) {
+        return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+          'Status': 'Forbidden'
+        }, null, 4));
+      }
+    }
+
+    await dbConnection.query(`DELETE FROM Appointment WHERE AppointmentId = '${req.params.id}'`, { type: QueryTypes.DELETE });
+
+    return res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
+  } catch (err: any) {
+    logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
+  }
+});
+
 export default appointmentsRouter;

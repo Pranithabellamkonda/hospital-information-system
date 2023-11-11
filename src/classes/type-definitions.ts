@@ -1,5 +1,4 @@
 import { type Request } from 'express';
-import { Method } from 'got';
 import { Role, User } from './out/user.js';
 
 export enum LogOutput {
@@ -14,5 +13,5 @@ export interface IAuthorizationRequest extends Request {
 export type RoleMap = {
     route: string;
     allowedRoles: Array<Role>;
-    method: Method
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 }

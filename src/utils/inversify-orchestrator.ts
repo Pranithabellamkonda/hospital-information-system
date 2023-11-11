@@ -1,8 +1,6 @@
 import 'reflect-metadata';
-import { Got } from 'got';
 import { Container } from 'inversify';
 import { FileWriter } from './file-writer.js';
-import { createHttpClient } from './http-client.js';
 import { Logger } from './logger.js';
 import { TYPES } from './types.js';
 import { LogOutput } from '../classes/type-definitions.js';
@@ -17,7 +15,6 @@ const createContainer = (): Container => {
   const dbConnection = new Sequelize('mysql://his_user:his_password_1234@localhost:3306/HIS');
 
   container.bind<Logger>(TYPES.Logger).toConstantValue(logger);
-  container.bind<Got>(TYPES.HttpClient).toConstantValue(createHttpClient(logger));
   container.bind<Sequelize>(TYPES.DbConnection).toConstantValue(dbConnection);
 
   return container;

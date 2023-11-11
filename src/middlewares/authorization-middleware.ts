@@ -24,6 +24,11 @@ const rolesMap: Array<RoleMap> = [
         allowedRoles: [ Role.Patient, Role.Admin ]
     },
     {
+        route: '/api/appointments/{id}',
+        method: 'DELETE',
+        allowedRoles: [ Role.Patient, Role.Admin ]
+    },
+    {
         route: '/api/patients/{id}/medical-records',
         method: 'GET',
         allowedRoles: [ Role.Patient ]
