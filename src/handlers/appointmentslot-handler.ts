@@ -30,7 +30,7 @@ appointmentslotsRouter.get('/appointment-slots', async (_req: Request, res: Resp
 
   appointmentslotsRouter.get('/appointment-slots/:id', async (_req: Request, res: Response) => {
     try {
-      const results: Array<AppointmentSlot> = await dbConnection.query(`select * from admin where AppointmentSlotId = '${_req.params.id}'`, { type: QueryTypes.SELECT });
+      const results: Array<AppointmentSlot> = await dbConnection.query(`select * from Admin where AppointmentSlotId = '${_req.params.id}'`, { type: QueryTypes.SELECT });
   
       if (results.length > 0) {
         const appointmentslot = results[0];

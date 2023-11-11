@@ -11,7 +11,7 @@ const dbConnection = container.get<Sequelize>(TYPES.DbConnection);
 
 specializationsRouter.get('/specializations', async (_req: Request, res: Response) => {
     try {
-      const results: Array<Specialization> = await dbConnection.query('select * from specialization', { type: QueryTypes.SELECT });
+      const results: Array<Specialization> = await dbConnection.query('select * from Specialization', { type: QueryTypes.SELECT });
   
       const specializations = results.map(s => {
         return {
@@ -30,7 +30,7 @@ specializationsRouter.get('/specializations', async (_req: Request, res: Respons
 
   specializationsRouter.get('/specializations/:id', async (_req: Request, res: Response) => {
     try {
-      const results: Array<Specialization> = await dbConnection.query(`select * from specialization 
+      const results: Array<Specialization> = await dbConnection.query(`select * from Specialization 
       where SpecializationId = '${_req.params.id}'`, { type: QueryTypes.SELECT });
   
       if (results.length > 0) {

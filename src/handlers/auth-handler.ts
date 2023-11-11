@@ -36,7 +36,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
         passport.authenticate('password', (err: Error, user: UserOut, options?: IVerifyOptions) => {
             if (err) throw err;
 
-            if (options?.message === 'Incorrect username!' || options?.message === 'Incorrect password!') {
+            if (options?.message === 'Incorrect username!' || options?.message === 'Incorrect password!' || options?.message === 'Missing credentials') {
                 return res.header('Content-type', 'application/json').status(401).send(JSON.stringify({ 
                     'Status': 'Unauthorized',
                     'Message': options.message

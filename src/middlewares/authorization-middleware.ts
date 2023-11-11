@@ -11,26 +11,26 @@ const rolesMap: Array<RoleMap> = [
     {
         route: '/api/patients/{id}',
         method: 'GET',
-        allowedRoles: [ Role.Patient, Role.Admin, Role.Doctor ]
+        allowedRoles: [ Role.Patient, Role.Admin ]
     },
     {
         route: '/api/patients/{id}/appointments',
         method: 'GET',
-        allowedRoles: [ Role.Patient, Role.Admin, Role.Doctor ]
+        allowedRoles: [ Role.Patient, Role.Admin ]
+    },
+    {
+        route: '/api/appointments/{id}',
+        method: 'PATCH',
+        allowedRoles: [ Role.Patient, Role.Admin ]
     },
     {
         route: '/api/patients/{id}/medical-records',
         method: 'GET',
-        allowedRoles: [ Role.Patient, Role.Admin, Role.Doctor ]
+        allowedRoles: [ Role.Patient ]
     },
     {
         route: '/api/patients/{id}/billing',
         method: 'GET',
-        allowedRoles: [ Role.Admin, Role.Patient ]
-    },
-    {
-        route: '/api/patients/{id}/appointments',
-        method: 'POST',
         allowedRoles: [ Role.Patient, Role.Admin ]
     },
     {
@@ -46,7 +46,7 @@ const rolesMap: Array<RoleMap> = [
     {
         route: '/api/doctors/{id}',
         method: 'GET',
-        allowedRoles: [ Role.Doctor ]
+        allowedRoles: [ Role.Patient, Role.Admin, Role.Doctor ]
     },
     {
         route: '/api/doctors/{id}/patients',
@@ -56,7 +56,7 @@ const rolesMap: Array<RoleMap> = [
     {
         route: '/api/doctors/{id}/appointments',
         method: 'GET',
-        allowedRoles: [ Role.Doctor ,Role.Admin ]
+        allowedRoles: [ Role.Doctor, Role.Admin ]
     },
     {
         route: '/api/doctors/{id}/patients/{id}/medical-records',
@@ -106,11 +106,17 @@ const rolesMap: Array<RoleMap> = [
     {
         route: '/api/appointments',
         method: 'POST',
-        allowedRoles: [ Role.Doctor, Role.Admin ]
+        allowedRoles: [ Role.Admin, Role.Patient ]
     }
 ];
 
 export const authorizeMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    const excludedRoutes = ['/api/login', '/api/signup', 'api/doc'];
+
+    if (excludedRoutes.includes(req.path)) {
+        return next();
+    }
+    
     const urlTemplate = req.url.replace(/\d+/g, '{id}');
     const roleMap = rolesMap.find(rm => {
         const isMatch = urlTemplate === rm.route && rm.method === req.method;

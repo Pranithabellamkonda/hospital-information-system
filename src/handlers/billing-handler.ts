@@ -11,7 +11,7 @@ const dbConnection = container.get<Sequelize>(TYPES.DbConnection);
 
 billingRouter.get('/billing', async (_req: Request, res: Response) => {
   try {
-      const results: Array<Billing> = await dbConnection.query('select * from billing', { type: QueryTypes.SELECT });
+      const results: Array<Billing> = await dbConnection.query('select * from Billing', { type: QueryTypes.SELECT });
   
       const billing = results.map(b => {
         return {

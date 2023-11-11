@@ -8,6 +8,7 @@ import { Patient } from '../classes/patient.js';
 import { MedicalRecord } from '../classes/medicalrecord.js';
 import { Appointment } from '../classes/appointment.js';
 import { IAuthorizationRequest } from '../classes/type-definitions.js';
+import { Role } from '../classes/out/user.js';
 
 const doctorsRouter = express.Router();
 const logger = container.get<Logger>(TYPES.Logger);
@@ -58,12 +59,6 @@ doctorsRouter.get('/doctors/:id', async (req: Request, res: Response) => {
     if (results.length > 0) {
       const doctor = results[0];
 
-      if (doctor.Username !== (<IAuthorizationRequest>req).dbUser.Username) {
-        return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
-          'Status': 'Forbidden'
-        }, null, 4));
-      }
-
       return res.header('Content-type', 'application/json').status(200).send(JSON.stringify({
         DoctorId: doctor.DoctorId,
         DoctorName: `${doctor.DoctorFName} ${doctor.DoctorLName}`,
@@ -82,12 +77,15 @@ doctorsRouter.get('/doctors/:id', async (req: Request, res: Response) => {
 
 doctorsRouter.get('/doctors/:id/patients', async (req: Request, res: Response) => {
   try {
+    const user = (<IAuthorizationRequest>req).dbUser;
+    const isAuthorized = await isUserAuthorized(user.Username, req.params.id);
 
-    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
-    if(!isAuthorized) {
-      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
-        'Status': 'Forbidden'
-      }, null, 4));
+    if (user.Role === Role.Doctor) {
+      if(!isAuthorized) {
+        return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+          'Status': 'Forbidden'
+        }, null, 4));
+      }
     }
 
     const results: Array<Patient> = await dbConnection.query(`select distinct P.PatientId, 
@@ -114,12 +112,15 @@ doctorsRouter.get('/doctors/:id/patients', async (req: Request, res: Response) =
 
 doctorsRouter.get('/doctors/:id/appointments', async (req: Request, res: Response) => {
   try {
+    const user = (<IAuthorizationRequest>req).dbUser;
+    const isAuthorized = await isUserAuthorized(user.Username, req.params.id);
 
-    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
-    if(!isAuthorized) {
-      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
-        'Status': 'Forbidden'
-      }, null, 4));
+    if (user.Role === Role.Doctor) {
+      if(!isAuthorized) {
+        return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+          'Status': 'Forbidden'
+        }, null, 4));
+      }
     }
 
     const results: Array<Appointment> = await dbConnection.query(`select AppointmentId, PatientId, 
@@ -146,7 +147,6 @@ doctorsRouter.get('/doctors/:id/appointments', async (req: Request, res: Respons
 
 doctorsRouter.get('/doctors/:id/patients/:pId/medical-records', async (req: Request, res: Response) => {
   try {
-
     const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
     if(!isAuthorized) {
       return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
@@ -194,15 +194,13 @@ doctorsRouter.post('/doctors', async (_req: Request, res: Response) => {
 
 doctorsRouter.post('/doctors/:id/medical-records', async (req: Request, res: Response) => {
   try {
-
-    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
+    const medicalrecord: MedicalRecord = req.body;
+    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, medicalrecord.DoctorId);
     if(!isAuthorized) {
       return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
         'Status': 'Forbidden'
       }, null, 4));
     }
-
-    const medicalrecord: MedicalRecord = req.body;
 
     await dbConnection.query(`INSERT INTO MedicalRecord (PatientId, DoctorId, Date, Diagnosis,Prescription) VALUES 
     ('${medicalrecord.PatientId}', '${medicalrecord.DoctorId}', '${medicalrecord.Date}', '${medicalrecord.Diagnosis}','${medicalrecord.Prescription}' )`,
@@ -217,12 +215,15 @@ doctorsRouter.post('/doctors/:id/medical-records', async (req: Request, res: Res
 
 doctorsRouter.put('/doctors/:id', async (req: Request, res: Response) => {
   try {
+    const user = (<IAuthorizationRequest>req).dbUser;
+    const isAuthorized = await isUserAuthorized(user.Username, req.params.id);
 
-    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
-    if(!isAuthorized) {
-      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
-        'Status': 'Forbidden'
-      }, null, 4));
+    if (user.Role === Role.Doctor) {
+      if(!isAuthorized) {
+        return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+          'Status': 'Forbidden'
+        }, null, 4));
+      }
     }
 
     const doctor: Doctor = req.body;

@@ -14,7 +14,10 @@ CREATE TABLE Patient (
     DateOfBirth DATE NOT NULL,
     Gender VARCHAR(10),
     Phone VARCHAR(25) NOT NULL,
-    Email VARCHAR(50)
+    Email VARCHAR(50),
+    Username VARCHAR(50) NOT NULL,
+	FOREIGN KEY (Username) 
+		REFERENCES User(Username)
 );
 
 CREATE TABLE Specialization (
@@ -87,8 +90,6 @@ CREATE TABLE Billing (
     FOREIGN KEY (AdminId)
         REFERENCES Admin (AdminId)
 );
-
-
 
 CREATE TABLE MedicalRecord (
     RecordId INT AUTO_INCREMENT PRIMARY KEY,
@@ -172,6 +173,62 @@ DO
 CALL PopulateAppointmentSlotsForOneDay();
 
 CALL PopulateAppointmentSlotsForOneDay();
+
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('alexward','feTPrVSNBJmtlACaM7ZOL3W/ZTLzn2Mc0peRb516HXw=','ELOBYs0WRgsx+/uGX6f61Q==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('alicejohnson456','kBqjIqVtrHsMEhQ9AbjJdVroPbjUNZ5OjCxxAtaPZAI=','EFbJtfltI9zQuv0Ug66Yxg==','Doctor');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('alicesmith','7NJkhMV8LwjGG4xqJ63ruvYFs/UgTdZpGmE1fMwyC/4=','TPnqe8hzNoj9cx/pPzaAqg==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('ameliahill','vFWJUh9P+uMq59PEBixnRfXix64OLt4xq6vbCMxfE9s=','LjAZLWbGYEqkhbkFqVBfhg==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('ariahill','GRkZJzN8R1abBLoK2sHV2tQX5TvLflH7kJiwRCHJLh8=','k0iNJJHUatt94yHpdyMjuw==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('arialewis','WkY7r2iBJBUTJlWJ6A4MT0FXb7HWFDyNZZ0d6duhrHA=','QtfwtK+84BSerWO5Pzch+w==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('avabarnes','Q76433uJyEKgxXo+xusPPawNiKv7XwUbvmLh+4doTf0=','zvyZZzMU91HXkT4o+EeL1w==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('avabennett','1Yd0Y1FHngACjq0aADZmfqyr5KXR56JFkEFXdwEeRt0=','f0vXLJURSzEsPKGIREwD6A==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('avagarcia444','SqHGDZban54uuGIbhzuA0kRtoKCL+bHXPL8IIF51LkY=','Fbhw72jxWJw/YjWjFgjY2A==','Doctor');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('avajohnson','AKHkDGPWk3zYpwWm1HDXVSyu77skG8W9r9lu3zMHoHA=','5hqSKyYfEl5TvDYkVVcT6A==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('avaward','rEwxzkk4qSTHIjTxbkVQ5S5jal2dtuSDfCkBbOGSG9Q=','oWDaE0jrvLKJos5fc7JiEw==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('chloefisher','cOLVuHWqKdahSWvgzOn6MN3AEEomYXugd+r7O0zIHQc=','xzToZLi2w3R9mXqON5tN2A==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('danielmartinez','7urxjJEWAVb4FRUF9Lp1ro9he2aYE/MX6vxphuB95tM=','vqdFsaqaC3qyp07Ga6mtpQ==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('danielmartinez888','zNb8dVLzoz7GrGEmZli6Vyn1JcVNpFKQC1lgPAnHCCI=','7pNdFWCFuB7DjLo2cibR9Q==','Doctor');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('davidclark','qyEXM+5qs20lFsZS9koFY+Z8uJnLkRfEccBa+QacP/g=','n1Ka361Svoq7kvvQmJ/+ig==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('davidlee2022','3J7r4icC73HuVMrFYWbR2rrRitXUQxi3Vuw3vMcvCpk=','XYQk1+/jGMLdKvkcc2hMxA==','Doctor');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('emilybrown101','OxpN/SD24SNxIEEL/28jPp71WwrT6N8sm3l6sX88D2o=','c5QLWmISX91k+n89fBn1tw==','Doctor');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('emilydavis','b7lSGDyh/8xVAw6274AkHm5/wZCXCYHEBJmqNjrRuHs=','X0ez7r9j06nggSYE6NSI4g==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('emmalee','hKTin0HB1le+Qa80gvxP5vlNJFu2ahhgS09iqU99Exo=','x4VddzbNLTh79ElgCzssoA==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('emmaramirez','ZiUJuA208snCOYNDGe8pNheq21DFdNdf8JaFw8agKUo=','IU0uNLO8ro6k2DDokzEMsw==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('emmaward','9hfaBK4waVP0Pxn2ltQlua50peubzs8FtGEvJbXTfi4=','sjcM7h4eOYpqPTf3EXPTHQ==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('emorgan','KEJDGWTtM5IrDI68cI+OStoFCCWZ9vOKUbOGVCyGf4A=','/acAsI/t4rA16iMtJPn7LQ==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('ethancarter','yGz070zioFyAoQCVweavnRd85ajZxAti28FET4f+j2s=','lIQ2U9XEyrF+UAXse4HxWg==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('ethanturner','NE7s+kPHdt13jhaUa5LE6YjjaL+mL6eDJnzjDpp8HzU=','vrDelyVo/hm93iDIOKEEHw==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('jamesmoore','aThFpaQRGyWuD7Z7DxEKzszoH4OLLd40rFsCAejU9OI=','kI2KcH7FKmsCMOG0OgC1rA==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('johndoe','ZSx66Y+x6C+mP2zU1F8bt5nNVe8oMzVptMVMJ/R9txg=','1GX7jnPmKTfvqJ/31+7AIA==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('johnsmith123','vbIfUEu9VFli/ROkqP54gJd1KH420x3Jqa2WbfXd2qM=','I1fpvzVn3Ld28jNEpem+aA==','Doctor');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('liamanderson222','9kwhwAmBNQ+y9k6lJfAi6pjABd/aEgYiCdAaFoKJtVs=','AMkdnxbhAK49MP+nMBcMeg==','Doctor');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('liamcooper','w0UJo4vm548r9C9/dmKXNOWu4lZngK0YKOgOwrxeSqc=','D7CEItY6owlh1eZGfzSVyQ==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('liamfoster','y8SZHnwO8HrHOJFiz6Tdyyp+6oDTI7vZuUFy2ynUjHA=','wOICuI8vR4CV1LCwXAe3Hw==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('liamtaylor','fIj9k7YRc+mXtvF9/B+Et488UKAPGVNGHKRrIL4CODk=','iKPcB3ASsmf2xVaIwqgIig==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('liamwilson','UszsQ27chGnbR7Ub6W/AsnDpJJaERcKDpzKE+padB0M=','FuG6e5C/WHk9XpI7rhuxUQ==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('loganturner','7lDQZIye0AUeDmM4kXeBdWEpga/OkrBE3BuATDSMUBY=','ABr8vEmbx1bEB/4NWzxeYQ==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('lucasbaker','lhyjg3mEf2hjJZ43bTSCghuKO04sFz+eik4a5V1S8c0=','eGFzxuQLMteXCioLklIGkg==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('masoncarter','grvKRUNLqkdCb9768FRUyKXSMvA4MSd9b6iHyAtkZos=','xWmorTYuHJKCTlQ4XuYeBg==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('masondavis','9cQrliSNudmeAf+t5QwY7pL/dFSEIu73M4pmC6FNRUg=','L+v9uGEBPQekaS2By8kBAA==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('masonevans','LjQBOpA964vItguskjXQV8ScTBper6GT6Ac81Mlt07c=','qhZyhFtWmUwvp1ruzML0rw==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('michaeldavis789','IOlrmbewT1CoACLFtPYN3rCwqQkjKxvctfjgdhycvKY=','MC8bu8qNI2ajYZcvbFZ8gQ==','Doctor');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('michaelj','/iGWv7BjZH4/Vc8xBdm0xrl/q0szW/1GTm3o4+tYShM=','6r70sYjkAFw0xDcMa77stA==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('noahcooper','DkUYxUJMiocogNy0LIlohc6dDEsavIx82rFyzWbaOkA=','4ys7F5CtwJ119OUpmgvmOg==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('noahgarcia','ghq3+spz6xby9kVmPQNNg2F5VrnS5vo7gOEefXLtafs=','iTsHKCno26Be/5kdO1kHag==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('olivermoore','F+Wb0pPV5Okx+5ZBUkcDr4N5dzkpkdKDBXhssTYP11k=','HJhTAetBoYUE3n6jzc/DoQ==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('oliviaanderson','iZxY92WEhSWyzWaaNrVIpLkjpU7SZ3NkclJyLxaNBQY=','Kvhzc+f9H43Iml4cvbL4Qw==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('oliviajohnson77','qWjb5KE4m3HbzDnDZgKGcrki83b81m1HBVv0nuIKjzI=','kwvj7a7pZws28kibJ7Fryg==','Doctor');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('olivialopez','4ubTx+ZWy6ob2xpmM7j3aK5743MWODuPHrRnmY7bkPk=','pExwZl7yAewPfYwOgfC5og==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('oliviayoung','diw5OfgOes3ZxgZHxKmn6zT2HA0BFqTfLeHg8+6gHSI=','QnJ8TdCii1sBgdhAYXdlrg==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('owenhill','NYZa+QFuSp/cRnQtVs7nFTEMTEWYEXd5QcKQQxsh5gY=','mIOtkzDwqltB0jF6F9iM5g==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('pranitha','3TLhBCdanxeR67kaig/5EMQuKceJITWPUcg0cTshl7A=','3SLMHx/yhtaN1jtynehgAw==','Admin');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('rekha','7YdqByRMUWMsSGVPI3ssapEEknnVpC7stStJRHps7jo=','LeOIvB1fRx7nNgZKGLCQow==','Admin');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('sophiabrown','3l/yBbg6AJ+f7QyMZ4EGenn/68R0DHZAIj/xYZnm9OA=','46sDUPeyoMF9RQqDbtY9Cg==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('sophiaperez','DpSJrn2vA0+SScl+eOSNsYvh8u8FLN2RSJYFLGXUpIY=','v4PxNbRSS0YuehrrjcpXcg==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('sophiapowell','BsJK4DEYXd8/VOZPq3OU1PgvN0N24j8up8Yywj6N8/0=','l7BJNc4+Yc5faBwy2STmUg==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('sophiawilliams999','LJ2VVgOZgUrkLxPdkbq/z1nWOuKJwyJe3Fm9VKtMZKY=','1hhchuLR5mCaV2EvQHOj7g==','Doctor');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('sophiethompson','NKkN5qrP8O2GJ0xLnkqdYXbk3l/7Ub4i22V3SvsAkZ0=','I23QPpmyb2wkBVxtQm9VaQ==','Patient');
+INSERT INTO User (`Username`,`HashedPassword`,`Salt`,`Role`) VALUES ('youssef','KhfpMOh416psEfam7AviEF1cXEkChXCcLRT0hVLWhGU=','8wnUNqtkzR7pYhEUrkmIjg==','Admin');
 
 
 INSERT INTO Specialization (Name, Description)
@@ -283,6 +340,5 @@ DELIMITER ;
 
 CALL InsertMedicalRecords();
 
-select * from Doctor;
 
 

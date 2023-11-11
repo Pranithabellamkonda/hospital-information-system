@@ -11,7 +11,7 @@ const dbConnection = container.get<Sequelize>(TYPES.DbConnection);
 
 medicalrecordsRouter.get('/medical-records', async (_req: Request, res: Response) => {
     try {
-      const results: Array<MedicalRecord> = await dbConnection.query('select * from medicalrecord', { type: QueryTypes.SELECT });
+      const results: Array<MedicalRecord> = await dbConnection.query('select * from MedicalRecord', { type: QueryTypes.SELECT });
   
       const medicalrecords = results.map(m => {
         return {
@@ -32,7 +32,7 @@ medicalrecordsRouter.get('/medical-records', async (_req: Request, res: Response
   });
   medicalrecordsRouter.get('/medical-records/:id', async (_req: Request, res: Response) => {
   try {
-    const results: Array<MedicalRecord> = await dbConnection.query(`select * from medicalrecord where RecordId = '${_req.params.id}'`, { type: QueryTypes.SELECT });
+    const results: Array<MedicalRecord> = await dbConnection.query(`select * from MedicalRecord where RecordId = '${_req.params.id}'`, { type: QueryTypes.SELECT });
 
     if (results.length > 0) {
       const medicalrecord = results[0];

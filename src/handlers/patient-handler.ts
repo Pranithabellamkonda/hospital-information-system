@@ -8,20 +8,21 @@ import { container } from '../utils/inversify-orchestrator.js';
 import { type Logger } from '../utils/logger.js';
 import { TYPES } from '../utils/types.js';
 import { IAuthorizationRequest } from '../classes/type-definitions.js';
+import { Role } from '../classes/out/user.js';
 
 const dbConnection = container.get<Sequelize>(TYPES.DbConnection);
 const logger = container.get<Logger>(TYPES.Logger);
 const patientsRouter = express.Router();
 
 const isUserAuthorized = async (username: string, patientId: string) => {
-  const results: Array<Patient> = await dbConnection.query(`select * from patient where PatientId = '${patientId}'`, { type: QueryTypes.SELECT });
+  const results: Array<Patient> = await dbConnection.query(`select * from Patient where PatientId = '${patientId}'`, { type: QueryTypes.SELECT });
 
   return results[0].Username === username;
 };
 
 patientsRouter.get('/patients', async (_req: Request, res: Response) => {
   try {
-    const results: Array<Patient> = await dbConnection.query('select * from patient', { type: QueryTypes.SELECT });
+    const results: Array<Patient> = await dbConnection.query('select * from Patient', { type: QueryTypes.SELECT });
 
     const patients = results.map(p => {
       return {
@@ -43,15 +44,18 @@ patientsRouter.get('/patients', async (_req: Request, res: Response) => {
 
 patientsRouter.get('/patients/:id', async (req: Request, res: Response) => {
   try {
-    const results: Array<Patient> = await dbConnection.query(`select * from patient where PatientId = '${req.params.id}'`, { type: QueryTypes.SELECT });
+    const results: Array<Patient> = await dbConnection.query(`select * from Patient where PatientId = '${req.params.id}'`, { type: QueryTypes.SELECT });
 
     if (results.length > 0) {
       const patient = results[0];
+      const user = (<IAuthorizationRequest>req).dbUser;
 
-      if (patient.Username !== (<IAuthorizationRequest>req).dbUser.Username) {
-        return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
-          'Status': 'Forbidden'
-        }, null, 4));
+      if (user.Role === Role.Patient) {
+        if (patient.Username !== user.Username) {
+          return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+            'Status': 'Forbidden'
+          }, null, 4));
+        }
       }
 
       res.header('Content-type', 'application/json').status(200).send(JSON.stringify({
@@ -107,11 +111,15 @@ patientsRouter.get('/patients/:id/medical-records', async (req: Request, res: Re
 
 patientsRouter.get('/patients/:id/appointments', async (req: Request, res: Response) => {
   try {
-    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
-    if(!isAuthorized) {
-      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
-        'Status': 'Forbidden'
-      }, null, 4));
+    const user = (<IAuthorizationRequest>req).dbUser;
+    const isAuthorized = await isUserAuthorized(user.Username, req.params.id);
+
+    if (user.Role === Role.Patient) {
+      if(!isAuthorized) {
+        return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+          'Status': 'Forbidden'
+        }, null, 4));
+      }
     }
 
     const results: Array<Appointment> = await dbConnection.query(`select A.AppointmentId, A.DoctorId, D.DoctorFName, D.DoctorLName, A.PatientId, A.Notes,
@@ -141,26 +149,29 @@ patientsRouter.get('/patients/:id/appointments', async (req: Request, res: Respo
 
 patientsRouter.get('/patients/:id/billing', async (req: Request, res: Response) => {
   try {
-
-    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
-    if(!isAuthorized) {
-      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
-        'Status': 'Forbidden'
-      }, null, 4));
+    const user = (<IAuthorizationRequest>req).dbUser;
+    const isAuthorized = await isUserAuthorized(user.Username, req.params.id);
+    
+    if (user.Role === Role.Patient) {
+      if(!isAuthorized) {
+        return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+          'Status': 'Forbidden'
+        }, null, 4));
+      }
     }
 
-      const results: Array<Billing> = await dbConnection.query(`select * from billing where PatientId = '${req.params.id}'`, 
-      { type: QueryTypes.SELECT });
-  
-      const billing = results.map(b => {
-        return {
-            BillingId: b.BillingId,
-            PatientId: b.PatientId,
-            BillingAmount: b.BillingAmount,
-            BillingDate: b.BillingDate,
-            AdminId: b.AdminId
-        };
-      });
+    const results: Array<Billing> = await dbConnection.query(`select * from Billing where PatientId = '${req.params.id}'`, 
+    { type: QueryTypes.SELECT });
+
+    const billing = results.map(b => {
+      return {
+          BillingId: b.BillingId,
+          PatientId: b.PatientId,
+          BillingAmount: b.BillingAmount,
+          BillingDate: b.BillingDate,
+          AdminId: b.AdminId
+      };
+    });
   
       return res.header('Content-type', 'application/json').status(200).send(JSON.stringify(billing, null, 4));
   } catch (err: any) {
@@ -184,37 +195,17 @@ patientsRouter.post('/patients', async (_req: Request, res: Response) => {
   }
 });
 
-patientsRouter.post('/patients/:id/appointments', async (req: Request, res: Response) => {
-  try {
-
-    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
-    if(!isAuthorized) {
-      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
-        'Status': 'Forbidden'
-      }, null, 4));
-    }
-
-    const appointment: Appointment = req.body;
-
-    await dbConnection.query(`INSERT INTO Appointment (PatientId, DoctorId, AppointmentSlotId, Notes) VALUES 
-      ('${appointment.PatientId}', '${appointment.DoctorId}', '${appointment.AppointmentSlotId}', '${appointment.Notes}')`,
-      { type: QueryTypes.INSERT });
-
-    res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));
-  } catch (err: any) {
-    res.status(500).send('Error occurred');
-    logger.error('Error occurred', err.message);
-  }
-});
-
 patientsRouter.put('/patients/:id', async (req: Request, res: Response) => {
   try {
-
-    const isAuthorized = await isUserAuthorized((<IAuthorizationRequest>req).dbUser.Username, req.params.id);
-    if(!isAuthorized) {
-      return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
-        'Status': 'Forbidden'
-      }, null, 4));
+    const user = (<IAuthorizationRequest>req).dbUser;
+    const isAuthorized = await isUserAuthorized(user.Username, req.params.id);
+    
+    if (user.Role === Role.Patient) {
+      if(!isAuthorized) {
+        return res.header('Content-type', 'application/json').status(403).send(JSON.stringify({ 
+          'Status': 'Forbidden'
+        }, null, 4));
+      }
     }
 
     const patient: Patient = req.body;

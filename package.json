@@ -13,6 +13,7 @@
     "lint": "eslint . --fix --ext .js,.ts",
     "prepare": "sort-package-json && npm run build",
     "start": "eslint && rimraf dist/ && tsc && node dist/app.js",
+    "swagger-autogen": "node swagger.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

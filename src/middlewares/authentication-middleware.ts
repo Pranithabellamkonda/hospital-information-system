@@ -58,7 +58,7 @@ passport.use('basic', new BasicStrategy(async (username: string, password: strin
 }));
 
 export const authenticateBasicMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    const excludedRoutes = ['/api/login', '/api/signup'];
+    const excludedRoutes = ['/api/login', '/api/signup', 'api/doc'];
 
     if (excludedRoutes.includes(req.path)) {
         return next();
