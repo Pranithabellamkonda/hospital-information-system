@@ -109,6 +109,11 @@ const rolesMap: Array<RoleMap> = [
         allowedRoles: [ Role.Admin ]
     },
     {
+        route: '/api/doctors/{id}/appointment-slots',
+        method: 'GET',
+        allowedRoles: [ Role.Admin, Role.Patient, Role.Doctor ]
+    },
+    {
         route: '/api/appointments',
         method: 'POST',
         allowedRoles: [ Role.Admin, Role.Patient ]

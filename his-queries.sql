@@ -257,11 +257,11 @@ VALUES
     ('Liam', 'Anderson', 19, '222-333-4444', 'liam.a@example.com', 'liamanderson222'),
     ('Ava', 'Garcia', 20, '444-555-6666', 'ava.g@example.com', 'avagarcia444');
     
-INSERT INTO Admin (AdminFName, AdminLName, Phone, Email)
+INSERT INTO Admin (AdminFName, AdminLName, Phone, Email, Username)
 VALUES 
-    ('Pranitha', 'B', '123-406-7890', 'pranitha.b@example.com'),
-    ('Rekha', 'S', '987-664-3210', 'rekha.s@example.com'),
-    ('Youssef', 'E','555-129-4567', 'youssef.e@example.com');
+    ('Pranitha', 'B', '123-406-7890', 'pranitha.b@example.com', 'pranitha'),
+    ('Rekha', 'S', '987-664-3210', 'rekha.s@example.com', 'rekha'),
+    ('Youssef', 'E','555-129-4567', 'youssef.e@example.com', 'youssef');
 
 INSERT INTO Patient (PatientFName, PatientLName, DateOfBirth, Gender, Phone, Email, Username)
 VALUES 
@@ -339,6 +339,3 @@ END //
 DELIMITER ;
 
 CALL InsertMedicalRecords();
-
-
-

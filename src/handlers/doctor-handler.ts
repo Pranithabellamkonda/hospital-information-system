@@ -9,6 +9,7 @@ import { MedicalRecord } from '../classes/medicalrecord.js';
 import { Appointment } from '../classes/appointment.js';
 import { IAuthorizationRequest } from '../classes/type-definitions.js';
 import { Role } from '../classes/out/user.js';
+import { AppointmentSlot } from '../classes/appointmentslot.js';
 
 const doctorsRouter = express.Router();
 const logger = container.get<Logger>(TYPES.Logger);
@@ -139,6 +140,21 @@ doctorsRouter.get('/doctors/:id/appointments', async (req: Request, res: Respons
     });
 
     return res.header('Content-type', 'application/json').status(200).send(JSON.stringify(appointments, null, 4));
+  } catch (err: any) {
+    logger.error('Error occurred', err.message);
+    return res.status(500).send('Error occurred');
+  }
+});
+
+doctorsRouter.get('/doctors/:id/appointment-slots', async (req: Request, res: Response) => {
+  try {
+    const slots: Array<AppointmentSlot> = await dbConnection.query(`select S.AppointmentStartTime, S.AppointmentEndTime, 
+    S.AppointmentSlotId from AppointmentSlot S left outer join (select * from Appointment 
+    where DoctorId = '${req.params.id}') A on A.AppointmentSlotId = S.AppointmentSlotId 
+    where A.AppointmentSlotId is NULL`, 
+    { type: QueryTypes.SELECT });
+
+    return res.header('Content-type', 'application/json').status(200).send(JSON.stringify(slots, null, 4));
   } catch (err: any) {
     logger.error('Error occurred', err.message);
     return res.status(500).send('Error occurred');
