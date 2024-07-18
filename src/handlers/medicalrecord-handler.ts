@@ -9,9 +9,9 @@ const medicalrecordsRouter = express.Router();
 const logger = container.get<Logger>(TYPES.Logger);
 const dbConnection = container.get<Sequelize>(TYPES.DbConnection);
 
-medicalrecordsRouter.get('/medicalrecords', async (_req: Request, res: Response) => {
+medicalrecordsRouter.get('/medical-records', async (_req: Request, res: Response) => {
     try {
-      const results: Array<MedicalRecord> = await dbConnection.query('select * from medicalrecord', { type: QueryTypes.SELECT });
+      const results: Array<MedicalRecord> = await dbConnection.query('select * from MedicalRecord', { type: QueryTypes.SELECT });
   
       const medicalrecords = results.map(m => {
         return {
@@ -30,9 +30,9 @@ medicalrecordsRouter.get('/medicalrecords', async (_req: Request, res: Response)
       logger.error('Error occurred', err.message);
     }
   });
-  medicalrecordsRouter.get('/medicalrecords/:id', async (_req: Request, res: Response) => {
+  medicalrecordsRouter.get('/medical-records/:id', async (_req: Request, res: Response) => {
   try {
-    const results: Array<MedicalRecord> = await dbConnection.query(`select * from medicalrecord where RecordId = '${_req.params.id}'`, { type: QueryTypes.SELECT });
+    const results: Array<MedicalRecord> = await dbConnection.query(`select * from MedicalRecord where RecordId = '${_req.params.id}'`, { type: QueryTypes.SELECT });
 
     if (results.length > 0) {
       const medicalrecord = results[0];
@@ -54,12 +54,12 @@ medicalrecordsRouter.get('/medicalrecords', async (_req: Request, res: Response)
   }
 });
 
-medicalrecordsRouter.post('/medicalrecords', async (_req: Request, res: Response) => {
+medicalrecordsRouter.post('/medical-records', async (_req: Request, res: Response) => {
   try {
     const medicalrecord: MedicalRecord = _req.body;
 
-    await dbConnection.query(`INSERT INTO MedicalRecord (RecordId, PatientId, DoctorId, Date, Diagnosis,Prescription) VALUES 
-    ('${medicalrecord.RecordId}', '${medicalrecord.PatientId}', '${medicalrecord.DoctorId}', '${medicalrecord.Date}', '${medicalrecord.Diagnosis}','${medicalrecord.Prescription}' )`,
+    await dbConnection.query(`INSERT INTO MedicalRecord (PatientId, DoctorId, Date, Diagnosis,Prescription) VALUES 
+    ('${medicalrecord.PatientId}', '${medicalrecord.DoctorId}', '${medicalrecord.Date}', '${medicalrecord.Diagnosis}','${medicalrecord.Prescription}' )`,
      { type: QueryTypes.INSERT });
 
     res.header('Content-type', 'application/json').status(200).send(JSON.stringify({'Status': 'Success'}, null, 4));

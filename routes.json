@@ -1,0 +1,36 @@
+{
+    "patient": {
+        "POST->createPatient✅": "api/patients",
+        "GET->home✅": "api/patients/{id}",
+        "GET->doctors✅": "api/doctors",
+        "GET->doctorsBySpecialization✅": "api/doctors?specializationId={sId}",
+        "GET->selectedDoctor✅": "api/doctors/{id}",
+        "GET->specializations✅": "api/specializations",
+        "GET->myAppointments✅": "api/patients/{id}/appointments",
+        "POST->appointment✅": "api/appointments",
+        "PUT->updateProfile✅": "api/patients/{id}",
+        "GET->myMedicalRecords✅": "api/patients/{id}/medical-records",
+        "GET->myBills✅": "api/patients/{id}/billing"
+    },
+    "doctor": {
+        "GET->home✅": "api/doctors/{id}",
+        "GET->myPatients✅": "api/doctors/{id}/patients",
+        "GET->selectedPatientProfile✅": "api/patients/{pId}",
+        "GET->selectedPatientMedicalRecord✅": "api/doctors/{id}/patients/{pId}/medical-records",
+        "GET->myAppointments✅": "api/doctors/{id}/appointments",
+        "PUT->updateProfile✅": "api/doctors/{id}",
+        "POST->medicalRecord✅": "api/medical-records"
+    },
+    "admin": {
+        "GET -> home": "api/admins/{id}",
+        "POST->createDoctor✅": "api/doctors",
+        "GET -> Doctors✅": "api/doctors",
+        "GET -> SelectedDoctor✅": "api/doctors/{id}",
+        "GET -> DoctorAppointments✅": "api/doctors/{id}/appointments",
+        "GET -> Patients✅": "api/patients",
+        "GET -> SelectedPatients✅": "api/patients/{id}",
+        "GET -> PatientAppointments✅": "api/patients/{id}/appointments",
+        "GET -> BillingInfo✅": "api/admins/{id}/billing",
+        "POST -> BillingInfo✅": "api/admins/{id}/billing"
+    }
+}

@@ -6,4 +6,5 @@ export class Patient {
     Gender: string;
     Phone: string;
     Email: string;
+    Username: string;
 }
